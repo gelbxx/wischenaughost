@@ -1,0 +1,79 @@
+// Mailbox (store-and-forward) protocol definitions for WischenauGhost.
+
+syntax = "proto3";
+package wghost.mailbox;
+
+// Request to store an encrypted envelope at a mailbox node.
+message StoreRequest {
+  // Who this envelope is for
+  bytes recipient_peer_id = 1;
+
+  // Hash of the mailbox token (proves the sender knows the recipient's published token)
+  bytes mailbox_token_hash = 2;
+
+  // The encrypted envelope (opaque blob — mailbox cannot read it)
+  bytes encrypted_envelope = 3;
+
+  // Size of the envelope in bytes
+  uint64 size = 4;
+
+  // When the sender created this request
+  uint64 timestamp = 5;
+}
+
+// Response from a mailbox node to a store request.
+message StoreResponse {
+  bool accepted = 1;
+
+  // If rejected, why
+  string rejection_reason = 2;
+
+  // Unique ID for this stored envelope (for later retrieval/deletion)
+  bytes envelope_id = 3;
+}
+
+// Request to retrieve pending envelopes from a mailbox node.
+message RetrieveRequest {
+  // Our peer ID (the mailbox verifies this matches stored envelopes)
+  bytes peer_id = 1;
+
+  // Our mailbox token (proves we're the intended recipient)
+  bytes mailbox_token = 2;
+
+  // Only retrieve envelopes after this timestamp (for incremental sync)
+  uint64 since_timestamp = 3;
+}
+
+// Response with pending envelopes.
+message RetrieveResponse {
+  repeated StoredEnvelope envelopes = 1;
+}
+
+message StoredEnvelope {
+  bytes envelope_id = 1;
+  bytes encrypted_envelope = 2;
+  uint64 stored_at = 3;
+}
+
+// Acknowledge receipt of envelopes (so the mailbox can delete them).
+message AcknowledgeRequest {
+  repeated bytes envelope_ids = 1;
+}
+
+// DHT record for a user's mailbox configuration.
+message MailboxRegistration {
+  // The user's peer ID
+  bytes peer_id = 1;
+
+  // Multiaddresses of the user's chosen mailbox nodes
+  repeated string mailbox_addresses = 2;
+
+  // Hash of the mailbox token (rotated weekly)
+  bytes mailbox_token_hash = 3;
+
+  // When this registration was last updated
+  uint64 updated_at = 4;
+
+  // Signature by the user's identity key
+  bytes signature = 5;
+}

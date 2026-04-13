@@ -1,0 +1,18 @@
+[package]
+name = "wghost-ffi"
+description = "FFI bindings for WischenauGhost — exposes Rust API to React Native via uniffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+wghost-core.workspace = true
+uniffi.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }

@@ -1,0 +1,48 @@
+# Rust
+rust/target/
+**/*.rs.bk
+Cargo.lock
+
+# React Native
+app/node_modules/
+app/.expo/
+app/ios/Pods/
+app/ios/build/
+app/android/app/build/
+app/android/build/
+app/android/.gradle/
+app/android/local.properties
+app/.metro-health-check*
+
+# Build artifacts
+*.apk
+*.aab
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Bootstrap node
+bootstrap-node/target/
+
+# Protobuf generated
+proto/gen/
+
+# Temporary
+*.tmp
+*.log
