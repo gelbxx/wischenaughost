@@ -1,0 +1,138 @@
+// Message protocol definitions for WischenauGhost.
+//
+// These define the wire format for encrypted message envelopes
+// exchanged between peers. All actual message content is encrypted —
+// these protos define the outer envelope structure.
+
+syntax = "proto3";
+package wghost.message;
+
+// An encrypted message envelope sent between peers.
+// The mailbox and relay nodes see this structure but cannot read the contents.
+message MessageEnvelope {
+  // Protocol version for forward compatibility
+  uint32 version = 1;
+
+  // Recipient's peer ID (public key hash)
+  bytes recipient_peer_id = 2;
+
+  // Encrypted header containing DH ratchet key, message number, etc.
+  // Encrypted with a header key derived from the session.
+  bytes encrypted_header = 3;
+
+  // Encrypted payload containing the actual message content.
+  // Encrypted with a message key from the Double Ratchet.
+  bytes encrypted_payload = 4;
+
+  // HMAC for envelope integrity verification
+  bytes mac = 5;
+
+  // Sender's timestamp (Unix milliseconds).
+  // This is the SENDER's local time — not necessarily accurate.
+  uint64 timestamp = 6;
+
+  // Padding to a fixed size bucket to prevent content-length analysis.
+  // Sizes: 256B, 1KB, 4KB, 16KB, 64KB
+  bytes padding = 7;
+}
+
+// The decrypted message header (inside encrypted_header).
+message MessageHeader {
+  // New DH ratchet public key (changes with each reply direction)
+  bytes dh_ratchet_key = 1;
+
+  // Counter of messages in the current sending chain
+  uint32 message_number = 2;
+
+  // Number of messages in the previous sending chain
+  // (needed for the receiver to skip ahead if messages arrived out of order)
+  uint32 previous_chain_length = 3;
+}
+
+// The decrypted message content (inside encrypted_payload).
+message MessageContent {
+  // What type of content this message carries
+  oneof content {
+    TextMessage text = 1;
+    FileMessage file = 2;
+    ImageMessage image = 3;
+    ReceiptMessage receipt = 4;
+    TypingIndicator typing = 5;
+    ProfileUpdate profile_update = 6;
+  }
+
+  // Unique message ID (random UUID, used for deduplication and receipts)
+  string message_id = 10;
+
+  // Sender's peer ID (inside encryption, so mailbox nodes can't see it)
+  bytes sender_peer_id = 11;
+}
+
+// A plain text message.
+message TextMessage {
+  string text = 1;
+
+  // Optional: message being replied to
+  string reply_to_message_id = 2;
+}
+
+// A file attachment (the file itself is transferred via the file transfer protocol).
+message FileMessage {
+  // Random AES-256-GCM key for decrypting the file
+  bytes file_encryption_key = 1;
+
+  // SHA-256 hash of the encrypted file (for integrity verification)
+  bytes file_hash = 2;
+
+  // Original filename
+  string filename = 3;
+
+  // MIME type
+  string mime_type = 4;
+
+  // File size in bytes
+  uint64 size = 5;
+}
+
+// An image message (includes a small inline thumbnail).
+message ImageMessage {
+  // Same fields as FileMessage for the full-resolution image
+  bytes file_encryption_key = 1;
+  bytes file_hash = 2;
+  string filename = 3;
+  uint64 size = 4;
+
+  // Small thumbnail (JPEG, max 10KB) embedded directly in the message.
+  // This way the recipient sees a preview immediately without downloading the full image.
+  bytes thumbnail = 5;
+
+  // Image dimensions
+  uint32 width = 6;
+  uint32 height = 7;
+}
+
+// Delivery and read receipts.
+message ReceiptMessage {
+  enum ReceiptType {
+    RECEIPT_TYPE_UNSPECIFIED = 0;
+    DELIVERED = 1;  // "I received your message"
+    READ = 2;       // "I opened the conversation and saw your message"
+  }
+
+  ReceiptType type = 1;
+
+  // Which message IDs this receipt is for (can acknowledge multiple at once)
+  repeated string message_ids = 2;
+}
+
+// Typing indicator (ephemeral, not stored).
+message TypingIndicator {
+  bool is_typing = 1;
+}
+
+// Profile update notification.
+message ProfileUpdate {
+  string display_name = 1;
+  bytes avatar = 2;        // Compressed image, max 64KB
+  string status_text = 3;
+}

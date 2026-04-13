@@ -1,0 +1,77 @@
+// Group messaging protocol definitions for WischenauGhost.
+
+syntax = "proto3";
+package wghost.group;
+
+// Group metadata, distributed to all members.
+message GroupInfo {
+  // Random 256-bit group identifier
+  bytes group_id = 1;
+
+  // Group name (max 64 chars)
+  string name = 2;
+
+  // Group avatar (compressed, max 64KB)
+  bytes avatar = 3;
+
+  // Group members
+  repeated GroupMember members = 4;
+
+  // When the group was created
+  uint64 created_at = 5;
+
+  // Current version (incremented on every change)
+  uint32 version = 6;
+}
+
+message GroupMember {
+  bytes peer_id = 1;
+  string display_name = 2;
+  MemberRole role = 3;
+  uint64 joined_at = 4;
+}
+
+enum MemberRole {
+  MEMBER_ROLE_UNSPECIFIED = 0;
+  MEMBER = 1;
+  ADMIN = 2;
+  OWNER = 3;   // Creator of the group, can't be removed
+}
+
+// Group management actions (sent as encrypted group messages).
+message GroupAction {
+  oneof action {
+    MemberAdded member_added = 1;
+    MemberRemoved member_removed = 2;
+    MemberRoleChanged role_changed = 3;
+    GroupRenamed group_renamed = 4;
+    GroupAvatarChanged avatar_changed = 5;
+  }
+
+  // Who performed this action
+  bytes actor_peer_id = 10;
+
+  // When
+  uint64 timestamp = 11;
+}
+
+message MemberAdded {
+  GroupMember member = 1;
+}
+
+message MemberRemoved {
+  bytes peer_id = 1;
+}
+
+message MemberRoleChanged {
+  bytes peer_id = 1;
+  MemberRole new_role = 2;
+}
+
+message GroupRenamed {
+  string new_name = 1;
+}
+
+message GroupAvatarChanged {
+  bytes new_avatar = 1;
+}

@@ -1,0 +1,15 @@
+[package]
+name = "wghost-core"
+description = "Core orchestration layer for WischenauGhost — ties crypto, network, and storage together"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+wghost-crypto.workspace = true
+wghost-network.workspace = true
+wghost-storage.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
