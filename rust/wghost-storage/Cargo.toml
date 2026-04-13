@@ -1,0 +1,16 @@
+[package]
+name = "wghost-storage"
+description = "Storage layer for WischenauGhost — SQLCipher encrypted database"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rusqlite.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+zeroize.workspace = true
+prost.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }

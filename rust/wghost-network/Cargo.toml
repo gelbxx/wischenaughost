@@ -1,0 +1,19 @@
+[package]
+name = "wghost-network"
+description = "P2P networking layer for WischenauGhost — libp2p, DHT, NAT traversal, mailbox"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+libp2p.workspace = true
+tokio.workspace = true
+wghost-crypto.workspace = true
+wghost-storage.workspace = true
+prost.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+rand.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }

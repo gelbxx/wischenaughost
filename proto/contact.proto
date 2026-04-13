@@ -1,0 +1,53 @@
+// Contact and identity protocol definitions for WischenauGhost.
+
+syntax = "proto3";
+package wghost.contact;
+
+// A user's public profile, signed by their identity key.
+message SignedProfile {
+  // The profile data
+  Profile profile = 1;
+
+  // Ed25519 signature over the serialized Profile bytes
+  bytes signature = 2;
+}
+
+message Profile {
+  // The user's peer ID (derived from their public key)
+  bytes peer_id = 1;
+
+  // User-chosen display name (max 64 chars)
+  string display_name = 2;
+
+  // Avatar image (compressed JPEG/PNG, max 64KB)
+  bytes avatar = 3;
+
+  // Status text (max 140 chars)
+  string status = 4;
+
+  // When this profile was last updated (Unix milliseconds)
+  uint64 updated_at = 5;
+}
+
+// Prekey bundle for X3DH session establishment.
+// This is what gets published to the DHT so others can start
+// an encrypted conversation even when we're offline.
+message PrekeyBundle {
+  // Ed25519 identity verifying key (32 bytes)
+  bytes identity_key = 1;
+
+  // X25519 identity DH public key (32 bytes)
+  bytes identity_dh_key = 2;
+
+  // Signed prekey (rotated every 30 days)
+  bytes signed_prekey = 3;
+
+  // Signature over signed_prekey, made with identity_key
+  bytes signed_prekey_signature = 4;
+
+  // Available one-time prekeys (each used only once for forward secrecy)
+  repeated bytes one_time_prekeys = 5;
+
+  // When this bundle was published
+  uint64 published_at = 6;
+}
