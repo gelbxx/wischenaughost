@@ -23,7 +23,6 @@
 use ed25519_dalek::{SigningKey, VerifyingKey, Signature, Signer, Verifier};
 use x25519_dalek::{StaticSecret, PublicKey as X25519PublicKey};
 use rand::rngs::OsRng;
-use zeroize::Zeroize;
 
 use crate::{CryptoError, Result};
 
